@@ -1,0 +1,55 @@
+name: Build PSO2 Damage Dump
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build-mingw:
+    name: Build (MinGW 32-bit)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install MinGW and Ninja
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mingw-w64 ninja-build
+
+      - name: Configure CMake
+        run: cmake --preset windows-mingw-i686
+
+      - name: Build
+        run: cmake --build --preset build-mingw
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pso2damagedump-mingw
+          path: bin/pso2damagedump.dll
+          if-no-files-found: error
+
+  build-msvc:
+    name: Build (MSVC 32-bit)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Configure CMake
+        run: cmake --preset windows-msvc-x86
+
+      - name: Build
+        run: cmake --build --preset build-msvc
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pso2damagedump-msvc
+          # MSVC multi-config generators usually append the config folder (Release)
+          path: bin/**/pso2damagedump.dll 
+          if-no-files-found: error

@@ -1,0 +1,49 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 21,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "windows-mingw-i686",
+      "displayName": "MinGW i686 (Release)",
+      "description": "Cross-compiles the Windows damage parser natively from Linux using the standard toolchain.",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/mingw-x86",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/mingw32.cmake"
+      }
+    },
+    {
+      "name": "windows-msvc-x86",
+      "displayName": "MSVC 32-bit (Release)",
+      "description": "Compiles using Visual Studio targeting 32-bit (Win32) architecture.",
+      "generator": "Visual Studio 17 2022",
+      "architecture": {
+        "value": "Win32",
+        "strategy": "set"
+      },
+      "binaryDir": "${sourceDir}/build/msvc-x86",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "build-mingw",
+      "displayName": "Build MinGW 32-bit",
+      "configurePreset": "windows-mingw-i686",
+      "configuration": "Release"
+    },
+    {
+      "name": "build-msvc",
+      "displayName": "Build MSVC 32-bit",
+      "configurePreset": "windows-msvc-x86",
+      "configuration": "Release"
+    }
+  ]
+}

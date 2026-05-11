@@ -1,67 +1,7 @@
-#include <windows.h>
-#include <locale>
-#include <ctime>
-#include <fstream>
-#include <codecvt>
-#include <Shlwapi.h>
-
-#include <queue>
-#include <unordered_map>
-
-#include "..\PSO2HBinaries\packet.h"
-#include "packetdef.h"
-#include "utility.h"
-
-#define OUTPUT_DIR "damagelogs"
-#define OUTPUT_DELAY 1000
-
-#define MSG_COMBAT_ACTION WM_USER+1
-#define MSG_NEW_NAME WM_USER+2
-#define MSG_NEW_NAME2 WM_USER+3
-#define MSG_NEW_PET WM_USER+4
-#define MSG_YOU_SPAWN WM_USER+5
-#define MSG_USER_ACTION WM_USER+6
-#define MSG_OBJECT_SPAWN WM_USER+7
-
-#define CheckDamageFlag(x, y) ((x & y) != 0)
+#include "main.h"
 
 namespace PSO2DamageDump
 {
-	static DWORD WINAPI initialize(LPVOID param);
-	void getNames(LPBYTE pkt);
-	void getNames2(LPBYTE pkt);
-	void getPetInfo(LPBYTE pkt);
-	void getDamage(LPBYTE pkt);
-	void getUserInfo(LPBYTE pkt);
-	void getUserActionInfo(LPBYTE pkt);
-	void getObjectInfo(LPBYTE pkt);
-	static inline void handleDamage(PacketDamage& info, std::wstring& name1, std::wstring& name2);
-	static DWORD WINAPI outputDamage(LPVOID param);
-
-	static std::unordered_map<DWORD, std::wstring> playerNames;
-	static std::unordered_map<DWORD, DWORD> petOwner;
-
-	static volatile DWORD selfID = 0;
-	static volatile DWORD outputThread = 0;
-
-	static volatile BOOL configYOU = 0;
-
-	std::wofstream output;
-	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-
-	static volatile DWORD outputDelay = OUTPUT_DELAY;
-
-	enum DamageFlags
-	{
-		DF_JA = 0x1, //Just Attack
-		//0x2?
-		DF_MISC = 0x4, //Healing, lava, etc.. all use this
-		DF_DMG = 0x8, //Damage
-		DF_MH = 0x10, //Multi-hit, probably. One Point and Infinite Fire have this set
-		DF_MISC2 = 0x20, //Zanverse uses this
-		DF_CRIT = 0x40
-	};
-
 	extern "C" BOOL APIENTRY DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved)
 	{
 		UNREFERENCED_PARAMETER(instance);
@@ -95,25 +35,33 @@ namespace PSO2DamageDump
 
 		UNREFERENCED_PARAMETER(param);
 
-		length = PSO2Hook::pso2hGetConfig("directory", NULL, 0);
+		HMODULE hPso2Host = GetModuleHandleA("pso2h.dll");
+        if (hPso2Host) {
+            // Set up our handles
+            pso2hGetConfig = (pso2hGetConfig_t)GetProcAddress(hPso2Host, "pso2hGetConfig");
+            pso2hLogLine = (pso2hLogLine_t)GetProcAddress(hPso2Host, "pso2hLogLine");
+            pso2hRegisterHandlerRecv = (pso2hRegisterHandlerRecv_t)GetProcAddress(hPso2Host, "pso2hRegisterHandlerRecv");
+        }
+
+		length = pso2hGetConfig("directory", NULL, 0);
 		if (length && length < sizeof(docspath))
-			PSO2Hook::pso2hGetConfig("directory", docspath, sizeof(docspath));
+			pso2hGetConfig("directory", docspath, sizeof(docspath));
 		else
 			sprintf_s(docspath, "./%s", OUTPUT_DIR);
 
-		length = PSO2Hook::pso2hGetConfig("delay", NULL, 0);
+		length = pso2hGetConfig("delay", NULL, 0);
 		if (length && length < sizeof(delay)) //0 to 4294967295
 		{
-			PSO2Hook::pso2hGetConfig("delay", delay, sizeof(delay));
+			pso2hGetConfig("delay", delay, sizeof(delay));
 			int ret = StrToInt(delay);
 			if (ret > 0)
 			{
 				outputDelay = ret;
-				PSO2Hook::pso2hLogLine("Output delay set to %i", ret);
+				pso2hLogLine("Output delay set to %i", ret);
 			}
 			else
 			{
-				PSO2Hook::pso2hLogLine("Output delay must be greater than or equal to 0 (currently %i)", ret);
+				pso2hLogLine("Output delay must be greater than or equal to 0 (currently %i)", ret);
 			}
 		}
 
@@ -130,13 +78,13 @@ namespace PSO2DamageDump
 
 		output << "timestamp, instanceID, sourceID, sourceName, targetID, targetName, attackID, damage, IsJA, IsCrit, IsMultiHit, IsMisc, IsMisc2" << std::endl;
 
-		PSO2Hook::pso2hRegisterHandlerRecv(getNames, 0x08, 0x04, "Get names to assign to IDs");
-		PSO2Hook::pso2hRegisterHandlerRecv(getPetInfo, 0x08, 0x11, "Get Pet ID to map to owner");
-		PSO2Hook::pso2hRegisterHandlerRecv(getUserInfo, 0x0F, 0x0D, "Get current player ID");
-		PSO2Hook::pso2hRegisterHandlerRecv(getNames2, 0x08, 0x0D, "Get enemy names to assign to IDs");
-		PSO2Hook::pso2hRegisterHandlerRecv(getDamage, 0x04, 0x52, "Get damage linked to IDs");
-		PSO2Hook::pso2hRegisterHandlerRecv(getUserActionInfo, 0x04, 0x15, "Get user action info (for turret mounting)");
-		PSO2Hook::pso2hRegisterHandlerRecv(getObjectInfo, 0x08, 0x10, "Get object ID to map to owner");
+		pso2hRegisterHandlerRecv(getNames, 0x08, 0x04, "Get names to assign to IDs");
+		pso2hRegisterHandlerRecv(getPetInfo, 0x08, 0x11, "Get Pet ID to map to owner");
+		pso2hRegisterHandlerRecv(getUserInfo, 0x0F, 0x0D, "Get current player ID");
+		pso2hRegisterHandlerRecv(getNames2, 0x08, 0x0D, "Get enemy names to assign to IDs");
+		pso2hRegisterHandlerRecv(getDamage, 0x04, 0x52, "Get damage linked to IDs");
+		pso2hRegisterHandlerRecv(getUserActionInfo, 0x04, 0x15, "Get user action info (for turret mounting)");
+		pso2hRegisterHandlerRecv(getObjectInfo, 0x08, 0x10, "Get object ID to map to owner");
 
 		CreateThread(NULL, 0, outputDamage, NULL, 0, (LPDWORD)&outputThread);
 
@@ -145,7 +93,7 @@ namespace PSO2DamageDump
 
 	void getDamage(LPBYTE packet)
 	{
-		PSO2Hook::Packet *pkt = new PSO2Hook::Packet(&packet);
+		Packet *pkt = new Packet(&packet);
 		void* info = malloc(pkt->dataSize);
 		memcpy(info, pkt->data, pkt->dataSize);
 		if (!PostThreadMessage(outputThread, MSG_COMBAT_ACTION, (WPARAM)info, 0))
@@ -155,7 +103,7 @@ namespace PSO2DamageDump
 
 	void getNames(LPBYTE packet)
 	{
-		PSO2Hook::Packet *pkt = new PSO2Hook::Packet(&packet);
+		Packet *pkt = new Packet(&packet);
 		void* info = malloc(pkt->dataSize);
 		memcpy(info, pkt->data, pkt->dataSize);
 		if (!PostThreadMessage(outputThread, MSG_NEW_NAME, (WPARAM)info, 0))
@@ -164,7 +112,7 @@ namespace PSO2DamageDump
 
 	void getNames2(LPBYTE packet)
 	{
-		PSO2Hook::Packet *pkt = new PSO2Hook::Packet(&packet);
+		Packet *pkt = new Packet(&packet);
 		void* info = malloc(pkt->dataSize);
 		memcpy(info, pkt->data, pkt->dataSize);
 		if (!PostThreadMessage(outputThread, MSG_NEW_NAME2, (WPARAM)info, 0))
@@ -173,7 +121,7 @@ namespace PSO2DamageDump
 
 	void getPetInfo(LPBYTE packet)
 	{
-		PSO2Hook::Packet *pkt = new PSO2Hook::Packet(&packet);
+		Packet *pkt = new Packet(&packet);
 		void* info = malloc(pkt->dataSize);
 		memcpy(info, pkt->data, pkt->dataSize);
 		if (!PostThreadMessage(outputThread, MSG_NEW_PET, (WPARAM)info, 0))
@@ -182,7 +130,7 @@ namespace PSO2DamageDump
 
 	void getUserInfo(LPBYTE packet)
 	{
-		PSO2Hook::Packet *pkt = new PSO2Hook::Packet(&packet);
+		Packet *pkt = new Packet(&packet);
 		void* info = malloc(pkt->dataSize);
 		memcpy(info, pkt->data, pkt->dataSize);
 		if (!PostThreadMessage(outputThread, MSG_YOU_SPAWN, (WPARAM)info, 0))
@@ -191,7 +139,7 @@ namespace PSO2DamageDump
 
 	void getUserActionInfo(LPBYTE packet)
 	{
-		PSO2Hook::Packet *pkt = new PSO2Hook::Packet(&packet);
+		Packet *pkt = new Packet(&packet);
 		void* info = malloc(pkt->dataSize);
 		memcpy(info, pkt->data, pkt->dataSize);
 		if (!PostThreadMessage(outputThread, MSG_USER_ACTION, (WPARAM)info, 0))
@@ -201,7 +149,7 @@ namespace PSO2DamageDump
 
 	void getObjectInfo(LPBYTE packet)
 	{
-		PSO2Hook::Packet *pkt = new PSO2Hook::Packet(&packet);
+		Packet *pkt = new Packet(&packet);
 		void* info = malloc(pkt->dataSize);
 		memcpy(info, pkt->data, pkt->dataSize);
 		if (!PostThreadMessage(outputThread, MSG_OBJECT_SPAWN, (WPARAM)info, 0))
@@ -340,6 +288,4 @@ namespace PSO2DamageDump
 		else
 			name2 = std::wstring(L"Unknown");
 	}
-
-
 }

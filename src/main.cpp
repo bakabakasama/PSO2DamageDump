@@ -25,6 +25,106 @@ namespace PSO2DamageDump
 		return TRUE;
 	}
 
+	void __cdecl getDamage(uint8_t* pkt)
+	{
+		// Something happened!
+		uint32_t totalSize = *(uint32_t*)(pkt);
+		uint32_t dataSize = totalSize - 8;
+		uint8_t* data = pkt + 8;
+		//pso2hLogLine("[DamageDump-Debug] getDamage triggered! Payload Size: %u", dataSize);
+
+        void* info = malloc(dataSize);
+        memcpy(info, data, dataSize);
+		if (!PostThreadMessage(outputThread, MSG_COMBAT_ACTION, (WPARAM)info, 0))
+            free(info);
+		return;
+	}
+
+	void __cdecl getNames(uint8_t* pkt)
+	{
+		// Something happened!
+		uint32_t totalSize = *(uint32_t*)(pkt);
+		uint32_t dataSize = totalSize - 8;
+		uint8_t* data = pkt + 8;
+		//pso2hLogLine("[DamageDump-Debug] getNames triggered! Payload Size: %u", dataSize);
+
+        void* info = malloc(dataSize);
+        memcpy(info, data, dataSize);
+		if (!PostThreadMessage(outputThread, MSG_NEW_NAME, (WPARAM)info, 0))
+			free(info);
+	}
+
+	void __cdecl getNames2(uint8_t* pkt)
+	{
+		// Something happened!
+		uint32_t totalSize = *(uint32_t*)(pkt);
+		uint32_t dataSize = totalSize - 8;
+		uint8_t* data = pkt + 8;
+		//pso2hLogLine("[DamageDump-Debug] getNames2 triggered! Payload Size: %u", dataSize);
+
+        void* info = malloc(dataSize);
+        memcpy(info, data, dataSize);
+		if (!PostThreadMessage(outputThread, MSG_NEW_NAME2, (WPARAM)info, 0))
+			free(info);
+	}
+
+	void __cdecl getPetInfo(uint8_t* pkt)
+	{
+		// Something happened!
+		uint32_t totalSize = *(uint32_t*)(pkt);
+		uint32_t dataSize = totalSize - 8;
+		uint8_t* data = pkt + 8;
+		//pso2hLogLine("[DamageDump-Debug] getPetInfo triggered! Payload Size: %u", dataSize);
+
+        void* info = malloc(dataSize);
+        memcpy(info, data, dataSize);
+		if (!PostThreadMessage(outputThread, MSG_NEW_PET, (WPARAM)info, 0))
+			free(info);
+	}
+
+	void __cdecl getUserInfo(uint8_t* pkt)
+	{
+		// Something happened!
+		uint32_t totalSize = *(uint32_t*)(pkt);
+		uint32_t dataSize = totalSize - 8;
+		uint8_t* data = pkt + 8;
+		//pso2hLogLine("[DamageDump-Debug] getUserInfo triggered! Payload Size: %u", dataSize);
+
+        void* info = malloc(dataSize);
+        memcpy(info, data, dataSize);
+		if (!PostThreadMessage(outputThread, MSG_YOU_SPAWN, (WPARAM)info, 0))
+			free(info);
+	}
+
+	void __cdecl getUserActionInfo(uint8_t* pkt)
+	{
+		// Something happened!
+		uint32_t totalSize = *(uint32_t*)(pkt);
+		uint32_t dataSize = totalSize - 8;
+		uint8_t* data = pkt + 8;
+		//pso2hLogLine("[DamageDump-Debug] getUserActionInfo triggered! Payload Size: %u", dataSize);
+
+        void* info = malloc(dataSize);
+        memcpy(info, data, dataSize);
+		if (!PostThreadMessage(outputThread, MSG_USER_ACTION, (WPARAM)info, 0))
+			free(info);
+	}
+
+
+	void __cdecl getObjectInfo(uint8_t* pkt)
+	{
+		// Something happened!
+		uint32_t totalSize = *(uint32_t*)(pkt);
+		uint32_t dataSize = totalSize - 8;
+		uint8_t* data = pkt + 8;
+		//pso2hLogLine("[DamageDump-Debug] getObjectInfo triggered! Payload Size: %u", dataSize);
+		
+        void* info = malloc(dataSize);
+        memcpy(info, data, dataSize);
+		if (!PostThreadMessage(outputThread, MSG_OBJECT_SPAWN, (WPARAM)info, 0))
+			free(info);
+	}
+
 	static DWORD WINAPI initialize(LPVOID param)
 	{
 		time_t ts = time(NULL);
@@ -97,94 +197,6 @@ namespace PSO2DamageDump
 		CreateThread(NULL, 0, outputDamage, NULL, 0, (LPDWORD)&outputThread);
 
 		return 0;
-	}
-
-	void __cdecl getDamage(void* context, uint8_t* packetData, uint32_t flags, uint32_t payloadSize)
-	{
-		// Something happened!
-		pso2hLogLine("[DamageDump-Debug] getDamage triggered! Payload Size: %u", payloadSize);
-
-		Packet pkt(&packetData); 
-        void* info = malloc(pkt.dataSize);
-        memcpy(info, pkt.data, pkt.dataSize);
-		if (!PostThreadMessage(outputThread, MSG_COMBAT_ACTION, (WPARAM)info, 0)) {
-            pso2hLogLine("[DamageDump-Debug] PostThreadMessage FAILED!");
-            free(info);
-        }
-		return;
-	}
-
-	void __cdecl getNames(void* context, uint8_t* packetData, uint32_t flags, uint32_t payloadSize)
-	{
-		// Something happened!
-		pso2hLogLine("[DamageDump-Debug] getNames triggered! Payload Size: %u", payloadSize);
-
-		Packet pkt(&packetData); 
-        void* info = malloc(pkt.dataSize);
-        memcpy(info, pkt.data, pkt.dataSize);
-		if (!PostThreadMessage(outputThread, MSG_NEW_NAME, (WPARAM)info, 0))
-			free(info);
-	}
-
-	void __cdecl getNames2(void* context, uint8_t* packetData, uint32_t flags, uint32_t payloadSize)
-	{
-		// Something happened!
-		pso2hLogLine("[DamageDump-Debug] getNames2 triggered! Payload Size: %u", payloadSize);
-
-		Packet pkt(&packetData); 
-        void* info = malloc(pkt.dataSize);
-        memcpy(info, pkt.data, pkt.dataSize);
-		if (!PostThreadMessage(outputThread, MSG_NEW_NAME2, (WPARAM)info, 0))
-			free(info);
-	}
-
-	void __cdecl getPetInfo(void* context, uint8_t* packetData, uint32_t flags, uint32_t payloadSize)
-	{
-		// Something happened!
-		pso2hLogLine("[DamageDump-Debug] getPetInfo triggered! Payload Size: %u", payloadSize);
-
-		Packet pkt(&packetData); 
-        void* info = malloc(pkt.dataSize);
-        memcpy(info, pkt.data, pkt.dataSize);
-		if (!PostThreadMessage(outputThread, MSG_NEW_PET, (WPARAM)info, 0))
-			free(info);
-	}
-
-	void __cdecl getUserInfo(void* context, uint8_t* packetData, uint32_t flags, uint32_t payloadSize)
-	{
-		// Something happened!
-		pso2hLogLine("[DamageDump-Debug] getUserInfo triggered! Payload Size: %u", payloadSize);
-
-		Packet pkt(&packetData); 
-        void* info = malloc(pkt.dataSize);
-        memcpy(info, pkt.data, pkt.dataSize);
-		if (!PostThreadMessage(outputThread, MSG_YOU_SPAWN, (WPARAM)info, 0))
-			free(info);
-	}
-
-	void __cdecl getUserActionInfo(void* context, uint8_t* packetData, uint32_t flags, uint32_t payloadSize)
-	{
-		// Something happened!
-		pso2hLogLine("[DamageDump-Debug] getUserActionInfo triggered! Payload Size: %u", payloadSize);
-
-		Packet pkt(&packetData); 
-        void* info = malloc(pkt.dataSize);
-        memcpy(info, pkt.data, pkt.dataSize);
-		if (!PostThreadMessage(outputThread, MSG_USER_ACTION, (WPARAM)info, 0))
-			free(info);
-	}
-
-
-	void __cdecl getObjectInfo(void* context, uint8_t* packetData, uint32_t flags, uint32_t payloadSize)
-	{
-		// Something happened!
-		pso2hLogLine("[DamageDump-Debug] getObjectInfo triggered! Payload Size: %u", payloadSize);
-		
-		Packet pkt(&packetData); 
-        void* info = malloc(pkt.dataSize);
-        memcpy(info, pkt.data, pkt.dataSize);
-		if (!PostThreadMessage(outputThread, MSG_OBJECT_SPAWN, (WPARAM)info, 0))
-			free(info);
 	}
 
 	static DWORD WINAPI outputDamage(LPVOID param)

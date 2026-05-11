@@ -32,13 +32,13 @@ namespace PSO2DamageDump
 	}
 
     static DWORD WINAPI initialize(LPVOID param);
-	void getNames(LPBYTE pkt);
-	void getNames2(LPBYTE pkt);
-	void getPetInfo(LPBYTE pkt);
-	void getDamage(LPBYTE pkt);
-	void getUserInfo(LPBYTE pkt);
-	void getUserActionInfo(LPBYTE pkt);
-	void getObjectInfo(LPBYTE pkt);
+	void __cdecl getNames(void* context, uint8_t* packetData, uint32_t flags, uint32_t payloadSize);
+	void __cdecl getNames2(void* context, uint8_t* packetData, uint32_t flags, uint32_t payloadSize);
+	void __cdecl getPetInfo(void* context, uint8_t* packetData, uint32_t flags, uint32_t payloadSize);
+	void __cdecl getDamage(void* context, uint8_t* packetData, uint32_t flags, uint32_t payloadSize);
+	void __cdecl getUserInfo(void* context, uint8_t* packetData, uint32_t flags, uint32_t payloadSize);
+	void __cdecl getUserActionInfo(void* context, uint8_t* packetData, uint32_t flags, uint32_t payloadSize);
+	void __cdecl getObjectInfo(void* context, uint8_t* packetData, uint32_t flags, uint32_t payloadSize);
 	static inline void handleDamage(PacketDamage& info, std::wstring& name1, std::wstring& name2);
 	static DWORD WINAPI outputDamage(LPVOID param);
 

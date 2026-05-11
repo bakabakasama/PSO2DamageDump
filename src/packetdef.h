@@ -1,4 +1,5 @@
 #include <windows.h>
+#include <cstdint>
 
 #ifdef _MSC_VER
     // Microsoft Visual C++ definitions
@@ -21,10 +22,10 @@ namespace PSO2DamageDump
     };
 
     // Function pointer definitions
-    typedef size_t (*pso2hGetConfig_t)(const char*, char*, size_t);
-    typedef void   (*pso2hLogLine_t)(const char*, ...);
-    typedef void   (*pso2hRegisterHandlerRecv_t)(void (*)(LPBYTE), BYTE, BYTE, const char*);
-
+    typedef size_t (__cdecl *pso2hGetConfig_t)(const char*, char*, size_t);
+    typedef void   (__cdecl *pso2hLogLine_t)(const char*, ...);
+	typedef int (__cdecl *pso2hRegisterHandlerRecv_t)(void* callback, uint8_t mainId, uint8_t subId, const char* handlerName);
+	
     // Extern declarations
     extern pso2hGetConfig_t pso2hGetConfig;
     extern pso2hLogLine_t   pso2hLogLine;

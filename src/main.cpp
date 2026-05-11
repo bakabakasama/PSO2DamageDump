@@ -76,82 +76,113 @@ namespace PSO2DamageDump
 
 		std::ios_base::sync_with_stdio(false);
 
-		output << "timestamp, instanceID, sourceID, sourceName, targetID, targetName, attackID, damage, IsJA, IsCrit, IsMultiHit, IsMisc, IsMisc2" << std::endl;
+		output << L"timestamp, instanceID, sourceID, sourceName, targetID, targetName, attackID, damage, IsJA, IsCrit, IsMultiHit, IsMisc, IsMisc2" << std::endl;
 
-		pso2hRegisterHandlerRecv(getNames, 0x08, 0x04, "Get names to assign to IDs");
-		pso2hRegisterHandlerRecv(getPetInfo, 0x08, 0x11, "Get Pet ID to map to owner");
-		pso2hRegisterHandlerRecv(getUserInfo, 0x0F, 0x0D, "Get current player ID");
-		pso2hRegisterHandlerRecv(getNames2, 0x08, 0x0D, "Get enemy names to assign to IDs");
-		pso2hRegisterHandlerRecv(getDamage, 0x04, 0x52, "Get damage linked to IDs");
-		pso2hRegisterHandlerRecv(getUserActionInfo, 0x04, 0x15, "Get user action info (for turret mounting)");
-		pso2hRegisterHandlerRecv(getObjectInfo, 0x08, 0x10, "Get object ID to map to owner");
+		int res = 1;
+		res = pso2hRegisterHandlerRecv((void*)getNames, 0x08, 0x04, "Get names to assign to IDs");
+		if (res == 0) pso2hLogLine("ERROR: Failed to register getNames hook!");
+		res = pso2hRegisterHandlerRecv((void*)getPetInfo, 0x08, 0x11, "Get Pet ID to map to owner");
+		if (res == 0) pso2hLogLine("ERROR: Failed to register getPetInfo hook!");
+		res = pso2hRegisterHandlerRecv((void*)getUserInfo, 0x0F, 0x0D, "Get current player ID");
+		if (res == 0) pso2hLogLine("ERROR: Failed to register getUserInfo hook!");
+		res = pso2hRegisterHandlerRecv((void*)getNames2, 0x08, 0x0D, "Get enemy names to assign to IDs");
+		if (res == 0) pso2hLogLine("ERROR: Failed to register getNames2 hook!");
+		res = pso2hRegisterHandlerRecv((void*)getDamage, 0x04, 0x52, "Get damage linked to IDs");
+		if (res == 0) pso2hLogLine("ERROR: Failed to register getDamage hook!");
+		res = pso2hRegisterHandlerRecv((void*)getUserActionInfo, 0x04, 0x15, "Get user action info (for turret mounting)");
+		if (res == 0) pso2hLogLine("ERROR: Failed to register getUserActionInfo hook!");
+		res = pso2hRegisterHandlerRecv((void*)getObjectInfo, 0x08, 0x10, "Get object ID to map to owner");
+		if (res == 0) pso2hLogLine("ERROR: Failed to register getObjectInfo hook!");
 
 		CreateThread(NULL, 0, outputDamage, NULL, 0, (LPDWORD)&outputThread);
 
 		return 0;
 	}
 
-	void getDamage(LPBYTE packet)
+	void __cdecl getDamage(void* context, uint8_t* packetData, uint32_t flags, uint32_t payloadSize)
 	{
-		Packet *pkt = new Packet(&packet);
-		void* info = malloc(pkt->dataSize);
-		memcpy(info, pkt->data, pkt->dataSize);
-		if (!PostThreadMessage(outputThread, MSG_COMBAT_ACTION, (WPARAM)info, 0))
-			free(info);
+		// Something happened!
+		pso2hLogLine("[DamageDump-Debug] getDamage triggered! Payload Size: %u", payloadSize);
+
+		Packet pkt(&packetData); 
+        void* info = malloc(pkt.dataSize);
+        memcpy(info, pkt.data, pkt.dataSize);
+		if (!PostThreadMessage(outputThread, MSG_COMBAT_ACTION, (WPARAM)info, 0)) {
+            pso2hLogLine("[DamageDump-Debug] PostThreadMessage FAILED!");
+            free(info);
+        }
 		return;
 	}
 
-	void getNames(LPBYTE packet)
+	void __cdecl getNames(void* context, uint8_t* packetData, uint32_t flags, uint32_t payloadSize)
 	{
-		Packet *pkt = new Packet(&packet);
-		void* info = malloc(pkt->dataSize);
-		memcpy(info, pkt->data, pkt->dataSize);
+		// Something happened!
+		pso2hLogLine("[DamageDump-Debug] getNames triggered! Payload Size: %u", payloadSize);
+
+		Packet pkt(&packetData); 
+        void* info = malloc(pkt.dataSize);
+        memcpy(info, pkt.data, pkt.dataSize);
 		if (!PostThreadMessage(outputThread, MSG_NEW_NAME, (WPARAM)info, 0))
 			free(info);
 	}
 
-	void getNames2(LPBYTE packet)
+	void __cdecl getNames2(void* context, uint8_t* packetData, uint32_t flags, uint32_t payloadSize)
 	{
-		Packet *pkt = new Packet(&packet);
-		void* info = malloc(pkt->dataSize);
-		memcpy(info, pkt->data, pkt->dataSize);
+		// Something happened!
+		pso2hLogLine("[DamageDump-Debug] getNames2 triggered! Payload Size: %u", payloadSize);
+
+		Packet pkt(&packetData); 
+        void* info = malloc(pkt.dataSize);
+        memcpy(info, pkt.data, pkt.dataSize);
 		if (!PostThreadMessage(outputThread, MSG_NEW_NAME2, (WPARAM)info, 0))
 			free(info);
 	}
 
-	void getPetInfo(LPBYTE packet)
+	void __cdecl getPetInfo(void* context, uint8_t* packetData, uint32_t flags, uint32_t payloadSize)
 	{
-		Packet *pkt = new Packet(&packet);
-		void* info = malloc(pkt->dataSize);
-		memcpy(info, pkt->data, pkt->dataSize);
+		// Something happened!
+		pso2hLogLine("[DamageDump-Debug] getPetInfo triggered! Payload Size: %u", payloadSize);
+
+		Packet pkt(&packetData); 
+        void* info = malloc(pkt.dataSize);
+        memcpy(info, pkt.data, pkt.dataSize);
 		if (!PostThreadMessage(outputThread, MSG_NEW_PET, (WPARAM)info, 0))
 			free(info);
 	}
 
-	void getUserInfo(LPBYTE packet)
+	void __cdecl getUserInfo(void* context, uint8_t* packetData, uint32_t flags, uint32_t payloadSize)
 	{
-		Packet *pkt = new Packet(&packet);
-		void* info = malloc(pkt->dataSize);
-		memcpy(info, pkt->data, pkt->dataSize);
+		// Something happened!
+		pso2hLogLine("[DamageDump-Debug] getUserInfo triggered! Payload Size: %u", payloadSize);
+
+		Packet pkt(&packetData); 
+        void* info = malloc(pkt.dataSize);
+        memcpy(info, pkt.data, pkt.dataSize);
 		if (!PostThreadMessage(outputThread, MSG_YOU_SPAWN, (WPARAM)info, 0))
 			free(info);
 	}
 
-	void getUserActionInfo(LPBYTE packet)
+	void __cdecl getUserActionInfo(void* context, uint8_t* packetData, uint32_t flags, uint32_t payloadSize)
 	{
-		Packet *pkt = new Packet(&packet);
-		void* info = malloc(pkt->dataSize);
-		memcpy(info, pkt->data, pkt->dataSize);
+		// Something happened!
+		pso2hLogLine("[DamageDump-Debug] getUserActionInfo triggered! Payload Size: %u", payloadSize);
+
+		Packet pkt(&packetData); 
+        void* info = malloc(pkt.dataSize);
+        memcpy(info, pkt.data, pkt.dataSize);
 		if (!PostThreadMessage(outputThread, MSG_USER_ACTION, (WPARAM)info, 0))
 			free(info);
 	}
 
 
-	void getObjectInfo(LPBYTE packet)
+	void __cdecl getObjectInfo(void* context, uint8_t* packetData, uint32_t flags, uint32_t payloadSize)
 	{
-		Packet *pkt = new Packet(&packet);
-		void* info = malloc(pkt->dataSize);
-		memcpy(info, pkt->data, pkt->dataSize);
+		// Something happened!
+		pso2hLogLine("[DamageDump-Debug] getObjectInfo triggered! Payload Size: %u", payloadSize);
+		
+		Packet pkt(&packetData); 
+        void* info = malloc(pkt.dataSize);
+        memcpy(info, pkt.data, pkt.dataSize);
 		if (!PostThreadMessage(outputThread, MSG_OBJECT_SPAWN, (WPARAM)info, 0))
 			free(info);
 	}
@@ -162,7 +193,10 @@ namespace PSO2DamageDump
 
 		while (1)
 		{
-			MSG msg;
+			// Force Windows to create the message queue for this thread immediately
+        	MSG msg;
+        	PeekMessage(&msg, NULL, WM_USER, WM_USER, PM_NOREMOVE);	
+			
 			if (!PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
 			{
 				Sleep(outputDelay);
@@ -204,18 +238,18 @@ namespace PSO2DamageDump
 				if (selfID != info.playerID)
 				{
 					selfID = info.playerID;
-					output << 0 << ","
-						<< 0 << ","
-						<< info.playerID << ","
-						<< L"YOU" << ","
-						<< 0 << ","
-						<< 0 << ","
-						<< 0 << ","
-						<< 0 << ","
-						<< 0 << ","
-						<< 0 << ","
-						<< 0 << ","
-						<< 0 << ","
+					output << 0 << L","
+						<< 0 << L","
+						<< info.playerID << L","
+						<< L"YOU" << L","
+						<< 0 << L","
+						<< 0 << L","
+						<< 0 << L","
+						<< 0 << L","
+						<< 0 << L","
+						<< 0 << L","
+						<< 0 << L","
+						<< 0 << L","
 						<< 0
 						<< std::endl;
 				}
@@ -247,23 +281,38 @@ namespace PSO2DamageDump
 			time_t ts = time(0);
 			std::wstring name1, name2;
 
-			handleDamage(info, name1, name2);
+			pso2hLogLine("[DamageDump-Debug] Processing Damage: SourceID: %u, TargetID: %u, Damage: %d", 
+                         info.sourceID, info.targetID, info.value);
+
+            handleDamage(info, name1, name2);
+
+            // Let's check the state of the stream BEFORE we write
+            if (output.fail()) {
+                pso2hLogLine("[DamageDump-Debug] ERROR: The wofstream is in a failed state BEFORE writing!");
+            }
 
 			//timestamp, instanceID, sourceID, sourceName, targetID, targetName, attackID, damage, IsJA, IsCrit, IsMultiHit, IsMisc, IsMisc2
-			output << ts << ","
-				<< info.instanceID << ","
-				<< info.sourceID << ","
-				<< name1 << ","
-				<< info.targetID << ","
-				<< name2 << ","
-				<< info.atkID << ","
-				<< info.value << ","
-				<< CheckDamageFlag(info.flags, DF_JA) << ","
-				<< CheckDamageFlag(info.flags, DF_CRIT) << ","
-				<< CheckDamageFlag(info.flags, DF_MH) << ","
-				<< CheckDamageFlag(info.flags, DF_MISC) << ","
+			output << ts << L","
+				<< info.instanceID << L","
+				<< info.sourceID << L","
+				<< name1 << L","
+				<< info.targetID << L","
+				<< name2 << L","
+				<< info.atkID << L","
+				<< info.value << L","
+				<< CheckDamageFlag(info.flags, DF_JA) << L","
+				<< CheckDamageFlag(info.flags, DF_CRIT) << L","
+				<< CheckDamageFlag(info.flags, DF_MH) << L","
+				<< CheckDamageFlag(info.flags, DF_MISC) << L","
 				<< CheckDamageFlag(info.flags, DF_MISC2)
 				<< std::endl;
+
+			// Let's check the state of the stream AFTER we write
+            if (output.fail()) {
+                pso2hLogLine("[DamageDump-Debug] ERROR: The wofstream failed DURING the write! Bad string format?");
+            } else {
+                pso2hLogLine("[DamageDump-Debug] Success! Data flushed to CSV.");
+            }
 
 			free((void*)msg.wParam);
 		}

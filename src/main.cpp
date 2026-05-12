@@ -29,15 +29,34 @@ namespace PSO2DamageDump
 	{
 		// Something happened!
 		uint32_t totalSize = *(uint32_t*)(pkt);
+		// Check the size of the packet. There's a chance we get one that's been ruined by
+		// some other process crashing.
+		if (totalSize < 8 || totalSize > 65535) {
+        	return; 
+    	}
 		uint32_t dataSize = totalSize - 8;
 		uint8_t* data = pkt + 8;
 		//pso2hLogLine("[DamageDump-Debug] getDamage triggered! Payload Size: %u", dataSize);
 
-        void* info = malloc(dataSize);
-        memcpy(info, data, dataSize);
-		if (!PostThreadMessage(outputThread, MSG_COMBAT_ACTION, (WPARAM)info, 0))
-            free(info);
-		return;
+		// Grab the header, it holds the flags for some reason?
+		uint8_t headerFlags = pkt[6];
+
+		// Account for truncated packets
+		size_t allocSize = dataSize;
+    	if (allocSize < sizeof(PacketDamage))
+        	allocSize = sizeof(PacketDamage);
+
+        void* info = calloc(1, allocSize);
+		if (info)
+		{
+			memcpy(info, data, dataSize);
+			// Send off the flags
+			((PacketDamage*)info)->flags = headerFlags;
+			if (!PostThreadMessage(outputThread, MSG_COMBAT_ACTION, (WPARAM)info, 0))
+				//pso2hLogLine("[DamageDump-Debug] getDamage PostThreadMessage Failed!");
+           		free(info);
+			return;
+		}
 	}
 
 	void __cdecl getNames(uint8_t* pkt)
@@ -48,10 +67,18 @@ namespace PSO2DamageDump
 		uint8_t* data = pkt + 8;
 		//pso2hLogLine("[DamageDump-Debug] getNames triggered! Payload Size: %u", dataSize);
 
-        void* info = malloc(dataSize);
-        memcpy(info, data, dataSize);
-		if (!PostThreadMessage(outputThread, MSG_NEW_NAME, (WPARAM)info, 0))
-			free(info);
+		// Account for truncated packets
+		size_t allocSize = dataSize;
+    	if (allocSize < sizeof(PacketDamage))
+        	allocSize = sizeof(PacketDamage);
+
+        void* info = calloc(1, allocSize);
+		if (info)
+		{
+			memcpy(info, data, dataSize);
+			if (!PostThreadMessage(outputThread, MSG_NEW_NAME, (WPARAM)info, 0))
+				free(info);
+		}
 	}
 
 	void __cdecl getNames2(uint8_t* pkt)
@@ -62,10 +89,18 @@ namespace PSO2DamageDump
 		uint8_t* data = pkt + 8;
 		//pso2hLogLine("[DamageDump-Debug] getNames2 triggered! Payload Size: %u", dataSize);
 
-        void* info = malloc(dataSize);
-        memcpy(info, data, dataSize);
-		if (!PostThreadMessage(outputThread, MSG_NEW_NAME2, (WPARAM)info, 0))
-			free(info);
+ 		// Account for truncated packets
+		size_t allocSize = dataSize;
+    	if (allocSize < sizeof(PacketDamage))
+        	allocSize = sizeof(PacketDamage);
+
+        void* info = calloc(1, allocSize);
+		if (info)
+		{
+			memcpy(info, data, dataSize);
+			if (!PostThreadMessage(outputThread, MSG_NEW_NAME2, (WPARAM)info, 0))
+				free(info);
+		}
 	}
 
 	void __cdecl getPetInfo(uint8_t* pkt)
@@ -76,10 +111,18 @@ namespace PSO2DamageDump
 		uint8_t* data = pkt + 8;
 		//pso2hLogLine("[DamageDump-Debug] getPetInfo triggered! Payload Size: %u", dataSize);
 
-        void* info = malloc(dataSize);
-        memcpy(info, data, dataSize);
-		if (!PostThreadMessage(outputThread, MSG_NEW_PET, (WPARAM)info, 0))
-			free(info);
+		// Account for truncated packets
+		size_t allocSize = dataSize;
+    	if (allocSize < sizeof(PacketDamage))
+        	allocSize = sizeof(PacketDamage);
+
+        void* info = calloc(1, allocSize);
+		if (info)
+		{
+			memcpy(info, data, dataSize);
+			if (!PostThreadMessage(outputThread, MSG_NEW_PET, (WPARAM)info, 0))
+				free(info);
+		}
 	}
 
 	void __cdecl getUserInfo(uint8_t* pkt)
@@ -90,10 +133,18 @@ namespace PSO2DamageDump
 		uint8_t* data = pkt + 8;
 		//pso2hLogLine("[DamageDump-Debug] getUserInfo triggered! Payload Size: %u", dataSize);
 
-        void* info = malloc(dataSize);
-        memcpy(info, data, dataSize);
-		if (!PostThreadMessage(outputThread, MSG_YOU_SPAWN, (WPARAM)info, 0))
-			free(info);
+		// Account for truncated packets
+		size_t allocSize = dataSize;
+    	if (allocSize < sizeof(PacketDamage))
+        	allocSize = sizeof(PacketDamage);
+
+        void* info = calloc(1, allocSize);
+		if (info)
+		{
+			memcpy(info, data, dataSize);
+			if (!PostThreadMessage(outputThread, MSG_YOU_SPAWN, (WPARAM)info, 0))
+				free(info);
+		}
 	}
 
 	void __cdecl getUserActionInfo(uint8_t* pkt)
@@ -104,10 +155,18 @@ namespace PSO2DamageDump
 		uint8_t* data = pkt + 8;
 		//pso2hLogLine("[DamageDump-Debug] getUserActionInfo triggered! Payload Size: %u", dataSize);
 
-        void* info = malloc(dataSize);
-        memcpy(info, data, dataSize);
-		if (!PostThreadMessage(outputThread, MSG_USER_ACTION, (WPARAM)info, 0))
-			free(info);
+		// Account for truncated packets
+		size_t allocSize = dataSize;
+    	if (allocSize < sizeof(PacketDamage))
+        	allocSize = sizeof(PacketDamage);
+
+        void* info = calloc(1, allocSize);
+		if (info)
+		{
+			memcpy(info, data, dataSize);
+			if (!PostThreadMessage(outputThread, MSG_USER_ACTION, (WPARAM)info, 0))
+				free(info);
+		}
 	}
 
 
@@ -119,10 +178,18 @@ namespace PSO2DamageDump
 		uint8_t* data = pkt + 8;
 		//pso2hLogLine("[DamageDump-Debug] getObjectInfo triggered! Payload Size: %u", dataSize);
 		
-        void* info = malloc(dataSize);
-        memcpy(info, data, dataSize);
-		if (!PostThreadMessage(outputThread, MSG_OBJECT_SPAWN, (WPARAM)info, 0))
-			free(info);
+		// Account for truncated packets
+		size_t allocSize = dataSize;
+    	if (allocSize < sizeof(PacketDamage))
+        	allocSize = sizeof(PacketDamage);
+
+        void* info = calloc(1, allocSize);
+		if (info)
+		{
+			memcpy(info, data, dataSize);
+			if (!PostThreadMessage(outputThread, MSG_OBJECT_SPAWN, (WPARAM)info, 0))
+				free(info);
+		}
 	}
 
 	static DWORD WINAPI initialize(LPVOID param)

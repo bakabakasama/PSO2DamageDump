@@ -31,7 +31,7 @@ namespace PSO2DamageDump
 		uint32_t totalSize = *(uint32_t*)(pkt);
 		// Check the size of the packet. There's a chance we get one that's been ruined by
 		// some other process crashing.
-		if (totalSize < 8 || totalSize > 65535) {
+		if (totalSize < 8 || totalSize > 8192) {
         	return; 
     	}
 		uint32_t dataSize = totalSize - 8;
@@ -63,6 +63,9 @@ namespace PSO2DamageDump
 	{
 		// Something happened!
 		uint32_t totalSize = *(uint32_t*)(pkt);
+		if (totalSize < 8 || totalSize > 8192) {
+        	return; 
+    	}
 		uint32_t dataSize = totalSize - 8;
 		uint8_t* data = pkt + 8;
 		//pso2hLogLine("[DamageDump-Debug] getNames triggered! Payload Size: %u", dataSize);
@@ -85,6 +88,9 @@ namespace PSO2DamageDump
 	{
 		// Something happened!
 		uint32_t totalSize = *(uint32_t*)(pkt);
+		if (totalSize < 8 || totalSize > 8192) {
+        	return; 
+    	}
 		uint32_t dataSize = totalSize - 8;
 		uint8_t* data = pkt + 8;
 		//pso2hLogLine("[DamageDump-Debug] getNames2 triggered! Payload Size: %u", dataSize);
@@ -107,6 +113,9 @@ namespace PSO2DamageDump
 	{
 		// Something happened!
 		uint32_t totalSize = *(uint32_t*)(pkt);
+		if (totalSize < 8 || totalSize > 8192) {
+        	return; 
+    	}
 		uint32_t dataSize = totalSize - 8;
 		uint8_t* data = pkt + 8;
 		//pso2hLogLine("[DamageDump-Debug] getPetInfo triggered! Payload Size: %u", dataSize);
@@ -129,6 +138,9 @@ namespace PSO2DamageDump
 	{
 		// Something happened!
 		uint32_t totalSize = *(uint32_t*)(pkt);
+		if (totalSize < 8 || totalSize > 8192) {
+        	return; 
+    	}
 		uint32_t dataSize = totalSize - 8;
 		uint8_t* data = pkt + 8;
 		//pso2hLogLine("[DamageDump-Debug] getUserInfo triggered! Payload Size: %u", dataSize);
@@ -151,6 +163,9 @@ namespace PSO2DamageDump
 	{
 		// Something happened!
 		uint32_t totalSize = *(uint32_t*)(pkt);
+		if (totalSize < 8 || totalSize > 8192) {
+        	return; 
+    	}
 		uint32_t dataSize = totalSize - 8;
 		uint8_t* data = pkt + 8;
 		//pso2hLogLine("[DamageDump-Debug] getUserActionInfo triggered! Payload Size: %u", dataSize);
@@ -174,6 +189,9 @@ namespace PSO2DamageDump
 	{
 		// Something happened!
 		uint32_t totalSize = *(uint32_t*)(pkt);
+		if (totalSize < 8 || totalSize > 8192) {
+        	return; 
+    	}
 		uint32_t dataSize = totalSize - 8;
 		uint8_t* data = pkt + 8;
 		//pso2hLogLine("[DamageDump-Debug] getObjectInfo triggered! Payload Size: %u", dataSize);

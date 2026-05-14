@@ -3,11 +3,25 @@
 namespace PSO2DamageDump
 {
     // Constructor
-    Packet::Packet(LPBYTE* rawPacketPtr) {
+    Packet::Packet(LPBYTE* rawPacketPtr)
+    {
         LPBYTE rawPacket = *rawPacketPtr;
-        DWORD fullSize = *((DWORD*)rawPacket);
-        dataSize = fullSize - 8; // Subtract 8-byte header
-        data = rawPacket + 8;    // Shift pointer to payload
+        if (!rawPacket) {
+            dataSize = 0;
+            data = nullptr;
+            return;
+        }
+
+        WORD fullSize = *((WORD*)rawPacket);
+
+        // Sanity check packet size
+        if (fullSize >= 8) { 
+            dataSize = fullSize - 8; 
+            data = rawPacket + 8;    // Shift pointer to payload safely
+        } else { 
+            dataSize = 0; 
+            data = nullptr;          // It's a junk/tiny packet, no payload exists
+        }
     }
 
     // Fucntion pointers!

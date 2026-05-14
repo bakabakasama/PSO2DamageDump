@@ -14,7 +14,7 @@ namespace PSO2DamageDump
 	class Packet 
     {
     public:
-        DWORD dataSize;
+        WORD dataSize;
         LPBYTE data;
 
         // Constructor takes LPBYTE*

@@ -25,18 +25,26 @@ namespace PSO2DamageDump
 		return TRUE;
 	}
 
-	void __cdecl getDamage(uint8_t* pkt)
+	void __cdecl getDamage(uint8_t** pktPtr)
 	{
+		// We got nothing or junk
+		if (!pktPtr || !*pktPtr ) return;
+		uint8_t* pkt = *pktPtr;
+
 		// Something happened!
-		uint32_t totalSize = *(uint32_t*)(pkt);
+		uint16_t totalSize = *(uint16_t*)(pkt);
 		// Check the size of the packet. There's a chance we get one that's been ruined by
 		// some other process crashing.
+		if (IsBadReadPtr(pkt, totalSize)) 
+        {
+            pso2hLogLine("[DamageDump-Debug] Blocked junk packet crash in getDamage");
+            return;
+        }
 		if (totalSize < 8 || totalSize > 8192) {
         	return; 
     	}
-		uint32_t dataSize = totalSize - 8;
+		uint16_t dataSize = totalSize - 8;
 		uint8_t* data = pkt + 8;
-		//pso2hLogLine("[DamageDump-Debug] getDamage triggered! Payload Size: %u", dataSize);
 
 		// Grab the header, it holds the flags for some reason?
 		uint8_t headerFlags = pkt[6];
@@ -46,61 +54,91 @@ namespace PSO2DamageDump
     	if (allocSize < sizeof(PacketDamage))
         	allocSize = sizeof(PacketDamage);
 
-        void* info = calloc(1, allocSize);
+		// Add +4 to make sure we don't chop off the null terminator
+        void* info = calloc(1, allocSize + 4);
 		if (info)
 		{
 			memcpy(info, data, dataSize);
 			// Send off the flags
 			((PacketDamage*)info)->flags = headerFlags;
 			if (!PostThreadMessage(outputThread, MSG_COMBAT_ACTION, (WPARAM)info, 0))
-				//pso2hLogLine("[DamageDump-Debug] getDamage PostThreadMessage Failed!");
+			{
+				pso2hLogLine("[DamageDump-Debug] getDamage PostThreadMessage Failed!");
            		free(info);
+			}
 			return;
 		}
 	}
 
-	void __cdecl getNames(uint8_t* pkt)
+	void __cdecl getNames(uint8_t** pktPtr)
 	{
+		// We got nothing or junk
+		if (!pktPtr || !*pktPtr ) return;
+		uint8_t* pkt = *pktPtr;
+
 		// Something happened!
-		uint32_t totalSize = *(uint32_t*)(pkt);
+		uint16_t totalSize = *(uint16_t*)(pkt);
+		if (IsBadReadPtr(pkt, totalSize)) 
+        {
+            pso2hLogLine("[DamageDump-Debug] Blocked junk packet crash in getNames");
+            return;
+        }
 		if (totalSize < 8 || totalSize > 8192) {
         	return; 
     	}
-		uint32_t dataSize = totalSize - 8;
+
+		uint16_t dataSize = totalSize - 8;
 		uint8_t* data = pkt + 8;
-		//pso2hLogLine("[DamageDump-Debug] getNames triggered! Payload Size: %u", dataSize);
 
 		// Account for truncated packets
 		size_t allocSize = dataSize;
-    	if (allocSize < sizeof(PacketDamage))
-        	allocSize = sizeof(PacketDamage);
+    	if (allocSize < sizeof(PacketCharacterInfo))
+		{
+        	allocSize = sizeof(PacketCharacterInfo);
+		}
 
-        void* info = calloc(1, allocSize);
+		// Add +4 to make sure we don't chop off the null terminator
+        void* info = calloc(1, allocSize + 4);
 		if (info)
 		{
 			memcpy(info, data, dataSize);
 			if (!PostThreadMessage(outputThread, MSG_NEW_NAME, (WPARAM)info, 0))
+			{
 				free(info);
+			}
 		}
 	}
 
-	void __cdecl getNames2(uint8_t* pkt)
+	void __cdecl getNames2(uint8_t** pktPtr)
 	{
+		// We got nothing or junk
+		if (!pktPtr || !*pktPtr ) return;
+		uint8_t* pkt = *pktPtr;
+		
 		// Something happened!
-		uint32_t totalSize = *(uint32_t*)(pkt);
-		if (totalSize < 8 || totalSize > 8192) {
+		uint16_t totalSize = *(uint16_t*)(pkt);
+		if (IsBadReadPtr(pkt, totalSize)) 
+        {
+            pso2hLogLine("[DamageDump-Debug] Blocked junk packet crash in getNames2");
+            return;
+        }
+		if (totalSize < 8 || totalSize > 8192)
+		{
         	return; 
     	}
-		uint32_t dataSize = totalSize - 8;
+
+		uint16_t dataSize = totalSize - 8;
 		uint8_t* data = pkt + 8;
-		//pso2hLogLine("[DamageDump-Debug] getNames2 triggered! Payload Size: %u", dataSize);
 
  		// Account for truncated packets
 		size_t allocSize = dataSize;
-    	if (allocSize < sizeof(PacketDamage))
-        	allocSize = sizeof(PacketDamage);
+    	if (allocSize < sizeof(PacketSpawnInfo))
+		{
+        	allocSize = sizeof(PacketSpawnInfo);
+		}
 
-        void* info = calloc(1, allocSize);
+		// Add +4 to make sure we don't chop off the null terminator
+        void* info = calloc(1, allocSize + 4);
 		if (info)
 		{
 			memcpy(info, data, dataSize);
@@ -109,22 +147,34 @@ namespace PSO2DamageDump
 		}
 	}
 
-	void __cdecl getPetInfo(uint8_t* pkt)
+	void __cdecl getPetInfo(uint8_t** pktPtr)
 	{
+		// We got nothing or junk
+		if (!pktPtr || !*pktPtr ) return;
+		uint8_t* pkt = *pktPtr;
+
 		// Something happened!
-		uint32_t totalSize = *(uint32_t*)(pkt);
+		uint16_t totalSize = *(uint16_t*)(pkt);
+		if (IsBadReadPtr(pkt, totalSize)) 
+        {
+            pso2hLogLine("[DamageDump-Debug] Blocked junk packet crash in getPetInfo");
+            return;
+        }
 		if (totalSize < 8 || totalSize > 8192) {
         	return; 
     	}
-		uint32_t dataSize = totalSize - 8;
+
+		uint16_t dataSize = totalSize - 8;
 		uint8_t* data = pkt + 8;
-		//pso2hLogLine("[DamageDump-Debug] getPetInfo triggered! Payload Size: %u", dataSize);
 
 		// Account for truncated packets
 		size_t allocSize = dataSize;
-    	if (allocSize < sizeof(PacketDamage))
-        	allocSize = sizeof(PacketDamage);
+    	if (allocSize < sizeof(PacketPetSpawn))
+		{
+        	allocSize = sizeof(PacketPetSpawn);
+		}
 
+		// Add +4 to make sure we don't chop off the null terminator
         void* info = calloc(1, allocSize);
 		if (info)
 		{
@@ -134,23 +184,35 @@ namespace PSO2DamageDump
 		}
 	}
 
-	void __cdecl getUserInfo(uint8_t* pkt)
+	void __cdecl getUserInfo(uint8_t** pktPtr)
 	{
+		// We got nothing or junk
+		if (!pktPtr || !*pktPtr ) return;
+		uint8_t* pkt = *pktPtr;
+
 		// Something happened!
-		uint32_t totalSize = *(uint32_t*)(pkt);
+		uint16_t totalSize = *(uint16_t*)(pkt);
+		if (IsBadReadPtr(pkt, totalSize)) 
+        {
+            pso2hLogLine("[DamageDump-Debug] Blocked junk packet crash in getUserInfo");
+            return;
+        }
 		if (totalSize < 8 || totalSize > 8192) {
         	return; 
     	}
-		uint32_t dataSize = totalSize - 8;
+
+		uint16_t dataSize = totalSize - 8;
 		uint8_t* data = pkt + 8;
-		//pso2hLogLine("[DamageDump-Debug] getUserInfo triggered! Payload Size: %u", dataSize);
 
 		// Account for truncated packets
 		size_t allocSize = dataSize;
-    	if (allocSize < sizeof(PacketDamage))
-        	allocSize = sizeof(PacketDamage);
+    	if (allocSize < sizeof(PacketUserInfo))
+		{
+        	allocSize = sizeof(PacketUserInfo);
+		}
 
-        void* info = calloc(1, allocSize);
+		// Add +4 to make sure we don't chop off the null terminator
+        void* info = calloc(1, allocSize + 4);
 		if (info)
 		{
 			memcpy(info, data, dataSize);
@@ -159,23 +221,35 @@ namespace PSO2DamageDump
 		}
 	}
 
-	void __cdecl getUserActionInfo(uint8_t* pkt)
+	void __cdecl getUserActionInfo(uint8_t** pktPtr)
 	{
+		// We got nothing or junk
+		if (!pktPtr || !*pktPtr ) return;
+		uint8_t* pkt = *pktPtr;
+
 		// Something happened!
-		uint32_t totalSize = *(uint32_t*)(pkt);
+		uint16_t totalSize = *(uint16_t*)(pkt);
+		if (IsBadReadPtr(pkt, totalSize)) 
+        {
+            pso2hLogLine("[DamageDump-Debug] Blocked junk packet crash in getUserActionInfo");
+            return;
+        }
 		if (totalSize < 8 || totalSize > 8192) {
         	return; 
     	}
-		uint32_t dataSize = totalSize - 8;
+
+		uint16_t dataSize = totalSize - 8;
 		uint8_t* data = pkt + 8;
-		//pso2hLogLine("[DamageDump-Debug] getUserActionInfo triggered! Payload Size: %u", dataSize);
 
 		// Account for truncated packets
 		size_t allocSize = dataSize;
-    	if (allocSize < sizeof(PacketDamage))
-        	allocSize = sizeof(PacketDamage);
+    	if (allocSize < sizeof(PacketPlayerAction))
+		{
+        	allocSize = sizeof(PacketPlayerAction);
+		}
 
-        void* info = calloc(1, allocSize);
+		// Add +4 to make sure we don't chop off the null terminator
+        void* info = calloc(1, allocSize + 4);
 		if (info)
 		{
 			memcpy(info, data, dataSize);
@@ -185,29 +259,40 @@ namespace PSO2DamageDump
 	}
 
 
-	void __cdecl getObjectInfo(uint8_t* pkt)
+	void __cdecl getObjectInfo(uint8_t** pktPtr)
 	{
-		// Something happened!
-		uint32_t totalSize = *(uint32_t*)(pkt);
-		if (totalSize < 8 || totalSize > 8192) {
-        	return; 
-    	}
-		uint32_t dataSize = totalSize - 8;
-		uint8_t* data = pkt + 8;
-		//pso2hLogLine("[DamageDump-Debug] getObjectInfo triggered! Payload Size: %u", dataSize);
-		
-		// Account for truncated packets
-		size_t allocSize = dataSize;
-    	if (allocSize < sizeof(PacketDamage))
-        	allocSize = sizeof(PacketDamage);
+		// We got nothing or junk
+		if (!pktPtr || !*pktPtr ) return;
+		uint8_t* pkt = *pktPtr;
 
-        void* info = calloc(1, allocSize);
-		if (info)
+	 	// Something happened!
+	 	uint16_t totalSize = *(uint16_t*)(pkt);
+		if (IsBadReadPtr(pkt, totalSize)) 
+        {
+            pso2hLogLine("[DamageDump-Debug] Blocked junk packet crash in getObjectInfo");
+            return;
+        }
+	 	if (totalSize < 8 || totalSize > 8192) {
+         	return; 
+     	}
+
+	 	uint16_t dataSize = totalSize - 8;
+	 	uint8_t* data = pkt + 8;
+	
+	 	// Account for truncated packets
+	 	size_t allocSize = dataSize;
+     	if (allocSize < sizeof(PacketVehicleSpawn))
 		{
-			memcpy(info, data, dataSize);
-			if (!PostThreadMessage(outputThread, MSG_OBJECT_SPAWN, (WPARAM)info, 0))
-				free(info);
+			allocSize = sizeof(PacketVehicleSpawn);
 		}
+		// Add +4 to make sure we don't chop off the null terminator
+        void* info = calloc(1, allocSize + 4);
+	 	if (info)
+	 	{
+	 		memcpy(info, data, dataSize);
+	 		if (!PostThreadMessage(outputThread, MSG_OBJECT_SPAWN, (WPARAM)info, 0))
+	 			free(info);
+	 	}
 	}
 
 	static DWORD WINAPI initialize(LPVOID param)
@@ -304,40 +389,40 @@ namespace PSO2DamageDump
 			{
 			case MSG_NEW_NAME:
 			{
-				PacketCharacterInfo info = *(PacketCharacterInfo*)msg.wParam;
-				playerNames[info.playerID] = std::wstring(info.name);
-				petOwner.erase(info.playerID);
-				strReplace(playerNames[info.playerID], L",", L"comma");
-				strReplace(playerNames[info.playerID], L"|", L"pipe");
+				PacketCharacterInfo* pInfo = (PacketCharacterInfo*)msg.wParam;
+				playerNames[pInfo->playerID] = std::wstring(pInfo->name);
+				petOwner.erase(pInfo->playerID);
+				strReplace(playerNames[pInfo->playerID], L",", L"comma");
+				strReplace(playerNames[pInfo->playerID], L"|", L"pipe");
 				free((void*)msg.wParam);
 				continue;
 			}
 			case MSG_NEW_NAME2:
 			{
-				PacketSpawnInfo info = *(PacketSpawnInfo*)msg.wParam;
-				playerNames[info.ID] = converter.from_bytes(info.name);
-				petOwner.erase(info.ID);
-				strReplace(playerNames[info.ID], L",", L"comma");
-				strReplace(playerNames[info.ID], L"|", L"pipe");
+				PacketSpawnInfo* pInfo = (PacketSpawnInfo*)msg.wParam;
+				playerNames[pInfo->ID] = converter.from_bytes(pInfo->name);
+				petOwner.erase(pInfo->ID);
+				strReplace(playerNames[pInfo->ID], L",", L"comma");
+				strReplace(playerNames[pInfo->ID], L"|", L"pipe");
 				free((void*)msg.wParam);
 				continue;
 			}
 			case MSG_NEW_PET:
 			{
-				PacketPetSpawn info = *(PacketPetSpawn*)msg.wParam;
-				petOwner[info.petID] = info.ownerID;
+				PacketPetSpawn* pInfo = (PacketPetSpawn*)msg.wParam;
+				petOwner[pInfo->petID] = pInfo->ownerID;
 				free((void*)msg.wParam);
 				continue;
 			}
 			case MSG_YOU_SPAWN:
 			{
-				PacketUserInfo info = *(PacketUserInfo*)msg.wParam;
-				if (selfID != info.playerID)
+				PacketUserInfo* pInfo = (PacketUserInfo*)msg.wParam;
+				if (selfID != pInfo->playerID)
 				{
-					selfID = info.playerID;
+					selfID = pInfo->playerID;
 					output << 0 << L","
 						<< 0 << L","
-						<< info.playerID << L","
+						<< pInfo->playerID << L","
 						<< L"YOU" << L","
 						<< 0 << L","
 						<< 0 << L","
@@ -355,16 +440,16 @@ namespace PSO2DamageDump
 			}
 			case MSG_USER_ACTION:
 			{ //Needs more testing
-				PacketPlayerAction info = *(PacketPlayerAction*)msg.wParam;
-				if (!std::string(info.action).compare("SitSuccess") && info.objID && info.userID)
-					petOwner[info.objID] = info.userID;
+				PacketPlayerAction* pInfo = (PacketPlayerAction*)msg.wParam;
+				if (!std::string(pInfo->action).compare("SitSuccess") && pInfo->objID && pInfo->userID)
+					petOwner[pInfo->objID] = pInfo->userID;
 				free((void*)msg.wParam);
 				continue;
 			}
 			case MSG_OBJECT_SPAWN:
 			{
-				PacketVehicleSpawn info = *(PacketVehicleSpawn*)msg.wParam;
-				petOwner[info.objID] = info.ownerID;
+				PacketVehicleSpawn* pInfo = (PacketVehicleSpawn*)msg.wParam;
+				petOwner[pInfo->objID] = pInfo->ownerID;
 				free((void*)msg.wParam);
 				continue;
 			}
@@ -374,14 +459,14 @@ namespace PSO2DamageDump
 				continue;
 			}
 
-			PacketDamage info = *(PacketDamage*)msg.wParam;
+			PacketDamage* pInfo = (PacketDamage*)msg.wParam;
 			time_t ts = time(0);
 			std::wstring name1, name2;
 
 			pso2hLogLine("[DamageDump-Debug] Processing Damage: SourceID: %u, TargetID: %u, Damage: %d", 
-                         info.sourceID, info.targetID, info.value);
+                         pInfo->sourceID, pInfo->targetID, pInfo->value);
 
-            handleDamage(info, name1, name2);
+            handleDamage(pInfo, name1, name2);
 
             // Let's check the state of the stream BEFORE we write
             if (output.fail()) {
@@ -390,18 +475,18 @@ namespace PSO2DamageDump
 
 			//timestamp, instanceID, sourceID, sourceName, targetID, targetName, attackID, damage, IsJA, IsCrit, IsMultiHit, IsMisc, IsMisc2
 			output << ts << L","
-				<< info.instanceID << L","
-				<< info.sourceID << L","
+				<< pInfo->instanceID << L","
+				<< pInfo->sourceID << L","
 				<< name1 << L","
-				<< info.targetID << L","
+				<< pInfo->targetID << L","
 				<< name2 << L","
-				<< info.atkID << L","
-				<< info.value << L","
-				<< CheckDamageFlag(info.flags, DF_JA) << L","
-				<< CheckDamageFlag(info.flags, DF_CRIT) << L","
-				<< CheckDamageFlag(info.flags, DF_MH) << L","
-				<< CheckDamageFlag(info.flags, DF_MISC) << L","
-				<< CheckDamageFlag(info.flags, DF_MISC2)
+				<< pInfo->atkID << L","
+				<< pInfo->value << L","
+				<< CheckDamageFlag(pInfo->flags, DF_JA) << L","
+				<< CheckDamageFlag(pInfo->flags, DF_CRIT) << L","
+				<< CheckDamageFlag(pInfo->flags, DF_MH) << L","
+				<< CheckDamageFlag(pInfo->flags, DF_MISC) << L","
+				<< CheckDamageFlag(pInfo->flags, DF_MISC2)
 				<< std::endl;
 
 			// Let's check the state of the stream AFTER we write
@@ -415,22 +500,22 @@ namespace PSO2DamageDump
 		}
 	}
 
-	static inline void handleDamage(PacketDamage& info, std::wstring& name1, std::wstring& name2)
+	static inline void handleDamage(PacketDamage* pInfo, std::wstring& name1, std::wstring& name2)
 	{
 
-		if (petOwner.count(info.sourceID))
-			info.sourceID = petOwner[info.sourceID];
+		if (petOwner.count(pInfo->sourceID))
+			pInfo->sourceID = petOwner[pInfo->sourceID];
 
-		if (petOwner.count(info.targetID))
-			info.targetID = petOwner[info.targetID];
+		if (petOwner.count(pInfo->targetID))
+			pInfo->targetID = petOwner[pInfo->targetID];
 
-		if (playerNames.count(info.sourceID))
-			name1 = playerNames[info.sourceID];
+		if (playerNames.count(pInfo->sourceID))
+			name1 = playerNames[pInfo->sourceID];
 		else
 			name1 = std::wstring(L"Unknown");
 
-		if (playerNames.count(info.targetID))
-			name2 = playerNames[info.targetID];
+		if (playerNames.count(pInfo->targetID))
+			name2 = playerNames[pInfo->targetID];
 		else
 			name2 = std::wstring(L"Unknown");
 	}

@@ -32,14 +32,14 @@ namespace PSO2DamageDump
 	}
 
     static DWORD WINAPI initialize(LPVOID param);
-	static void __cdecl getNames(uint8_t* pkt);
-	static void __cdecl getNames2(uint8_t* pkt);
-	static void __cdecl getPetInfo(uint8_t* pkt);
-	static void __cdecl getDamage(uint8_t* pkt);
-	static void __cdecl getUserInfo(uint8_t* pkt);
-	static void __cdecl getUserActionInfo(uint8_t* pkt);
-	static void __cdecl getObjectInfo(uint8_t* pkt);
-	static inline void handleDamage(PacketDamage& info, std::wstring& name1, std::wstring& name2);
+	static void __cdecl getNames(uint8_t** pkt);
+	static void __cdecl getNames2(uint8_t** pkt);
+	static void __cdecl getPetInfo(uint8_t** pkt);
+	static void __cdecl getDamage(uint8_t** pkt);
+	static void __cdecl getUserInfo(uint8_t** pkt);
+	static void __cdecl getUserActionInfo(uint8_t** pkt);
+	static void __cdecl getObjectInfo(uint8_t** pkt);
+	static inline void handleDamage(PacketDamage* info, std::wstring& name1, std::wstring& name2);
 	static DWORD WINAPI outputDamage(LPVOID param);
 
 	static std::unordered_map<DWORD, std::wstring> playerNames;

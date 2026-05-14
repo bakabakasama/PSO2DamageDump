@@ -67,9 +67,9 @@ namespace PSO2DamageDump
         BYTE unk3[8];   // +28
         DWORD atkID;    // +36
         INT32 value;    // +40 (Damage)
-        BYTE unk4[20];  // +44
-        BYTE flags;     // +64
-        BYTE unk5[11];  // +65
+        BYTE unk4[16];  // +44
+        BYTE flags;     // +60
+        BYTE unk5[11];  // +61
 	} ATTRPACK;
 
 	struct PacketVehicleSpawn /*08.10*/

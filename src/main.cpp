@@ -46,9 +46,6 @@ namespace PSO2DamageDump
 		uint16_t dataSize = totalSize - 8;
 		uint8_t* data = pkt + 8;
 
-		// Grab the header, it holds the flags for some reason?
-		uint8_t headerFlags = pkt[6];
-
 		// Account for truncated packets
 		size_t allocSize = dataSize;
     	if (allocSize < sizeof(PacketDamage))
@@ -59,8 +56,6 @@ namespace PSO2DamageDump
 		if (info)
 		{
 			memcpy(info, data, dataSize);
-			// Send off the flags
-			((PacketDamage*)info)->flags = headerFlags;
 			if (!PostThreadMessage(outputThread, MSG_COMBAT_ACTION, (WPARAM)info, 0))
 			{
 				pso2hLogLine("[DamageDump-Debug] getDamage PostThreadMessage Failed!");
@@ -463,8 +458,8 @@ namespace PSO2DamageDump
 			time_t ts = time(0);
 			std::wstring name1, name2;
 
-			pso2hLogLine("[DamageDump-Debug] Processing Damage: SourceID: %u, TargetID: %u, Damage: %d", 
-                         pInfo->sourceID, pInfo->targetID, pInfo->value);
+			//pso2hLogLine("[DamageDump-Debug] Processing Damage: SourceID: %u, TargetID: %u, Damage: %d", 
+            //             pInfo->sourceID, pInfo->targetID, pInfo->value);
 
             handleDamage(pInfo, name1, name2);
 
@@ -493,7 +488,7 @@ namespace PSO2DamageDump
             if (output.fail()) {
                 pso2hLogLine("[DamageDump-Debug] ERROR: The wofstream failed DURING the write! Bad string format?");
             } else {
-                pso2hLogLine("[DamageDump-Debug] Success! Data flushed to CSV.");
+                //pso2hLogLine("[DamageDump-Debug] Success! Data flushed to CSV.");
             }
 
 			free((void*)msg.wParam);

@@ -32,15 +32,26 @@ target_link_libraries(pso2damagedump PRIVATE shlwapi)
 # ---------------------------------------------------------
 # MinGW linker flags
 if(MINGW)
+# --- COMPILER FLAGS ---
+    target_compile_options(pso2damagedump PRIVATE 
+        -Wall 
+        -O2 
+        -ffunction-sections 
+        -fdata-sections 
+        -flto
+    )
+
+    # --- LINKER FLAGS ---
     target_link_options(pso2damagedump PRIVATE 
         -static 
         -static-libgcc 
         -static-libstdc++ 
         -Wl,--enable-stdcall-fixup 
         -Wl,--kill-at
+        -Wl,--gc-sections
+        -flto
+        -s
     )
-    # Warnings
-    target_compile_options(pso2damagedump PRIVATE -Wall)
 endif()
 
 # MSVC specific configurations
